@@ -5,7 +5,25 @@
 
 #include <std_msgs/msg/string.h>
 
+// ######################### MICRO-ROS TASK  #########################
+
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+
+#include "esp_log.h"
+#include "esp_system.h"
+#include "driver/uart.h"
+
+#include <rmw_microxrcedds_c/config.h>
+#include <rmw_microros/rmw_microros.h>
+
+
+// ######################### MICRO-ROS TASK  #########################
+
 #include "pan_tilt_controller.h"
+#include "esp32_serial_transport.h"
+
 
 #define MAXLENGTHMESSAGE 200
 #define LENGTHMSGCOMMAND 5
@@ -29,16 +47,16 @@ void subscription_callback(const void * msgin) {
 	msgPublisher.data.capacity = LENGTHMSGCOMMAND;
 
 	if (strcmp(msg->data.data, "Up") == 0) {
-		set_vertical_angle(pan_tilt_state.vertical_servo.angle + 5);
+		set_vertical_angle(pan_tilt_state.vertical_servo.angle + 10);
 		RCSOFTCHECK(rcl_publish(&publisher, &msgPublisher, NULL));
 	} else if (strcmp(msg->data.data, "Down") == 0) {
-		set_vertical_angle(pan_tilt_state.vertical_servo.angle - 5);
+		set_vertical_angle(pan_tilt_state.vertical_servo.angle - 10);
 		RCSOFTCHECK(rcl_publish(&publisher, &msgPublisher, NULL));
 	} else if (strcmp(msg->data.data, "Left") == 0) {
-		set_horizontal_angle(pan_tilt_state.horizontal_servo.angle - 5);
+		set_horizontal_angle(pan_tilt_state.horizontal_servo.angle - 10);
 		RCSOFTCHECK(rcl_publish(&publisher, &msgPublisher, NULL));
 	} else if (strcmp(msg->data.data, "Right") == 0) {
-		set_horizontal_angle(pan_tilt_state.horizontal_servo.angle + 5);
+		set_horizontal_angle(pan_tilt_state.horizontal_servo.angle + 10);
 		RCSOFTCHECK(rcl_publish(&publisher, &msgPublisher, NULL));
 	}
 
@@ -104,11 +122,27 @@ void micro_ros_task(void * arg) {
 	vTaskDelete(NULL);
 }
 
+static size_t uart_port = UART_NUM_0;
+
 void app_main(void * arg) {
-    xTaskCreate(micro_ros_task,
+#if defined(RMW_UXRCE_TRANSPORT_CUSTOM)
+	rmw_uros_set_custom_transport(
+		true,
+		(void *) &uart_port,
+		esp32_serial_open,
+		esp32_serial_close,
+		esp32_serial_write,
+		esp32_serial_read
+	);
+#else
+#error micro-ROS transports misconfigured
+#endif  // RMW_UXRCE_TRANSPORT_CUSTOM
+
+	xTaskCreate(micro_ros_task,
             "uros_task",
             CONFIG_MICRO_ROS_APP_STACK,
             NULL,
             CONFIG_MICRO_ROS_APP_TASK_PRIO,
             NULL);
+	
 }

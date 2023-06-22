@@ -11,11 +11,25 @@ void configure_servo(uint8_t channel_selected, uint8_t timer_selected, uint8_t g
 void update_timer_state(uint8_t timer_selected, uint8_t timer_freq_hz);
 void update_horizontal_servo_state(uint8_t channel_selected, uint8_t timer_selected, uint8_t gpio_num);
 void update_vertical_servo_state(uint8_t channel_selected, uint8_t timer_selected, uint8_t gpio_num);
+void servo_deinit(uint8_t channel_selected);
+void timer_deinit(uint8_t timer_selected);
 
-void pan_tilt_init(void) {
-  init_pwm_timer(0, 50);
-  init_horizontal_servo(0, 0, 17);
-  init_vertical_servo(1, 0, 16);
+void default_pan_tilt_init() {
+  pan_tilt_init(0, 50, 0, 1, 17, 16);
+}
+
+void pan_tilt_init(uint8_t timer, uint8_t freq_hz, uint8_t channel_horizontal, uint8_t channel_vetical, uint8_t gpio_horizontal, uint8_t gpio_vertical) {
+  init_pwm_timer(timer, freq_hz);
+  init_horizontal_servo(channel_horizontal, timer, gpio_horizontal);
+  init_vertical_servo(channel_vetical, timer, gpio_vertical);
+}
+
+// Pan tilt desinstalation
+void pan_tilt_deinit(void) {
+  servo_deinit(pan_tilt_state.horizontal_servo.channel);
+  servo_deinit(pan_tilt_state.vertical_servo.channel);
+  timer_deinit(pan_tilt_state.horizontal_servo.timer);
+  memset(&pan_tilt_state, 0, sizeof(pan_tilt_state));
 }
 
 void set_horizontal_angle(int16_t angle) {
@@ -51,6 +65,11 @@ void set_vertical_angle(int16_t angle) {
 
   uint32_t duty = ((angle * (SERVO_MAX_DUTY - SERVO_MIN_DUTY)) / 180) + SERVO_MIN_DUTY;
   uint8_t channel = pan_tilt_state.vertical_servo.channel;
+
+  if (duty < SERVO_MIN_DUTY || duty > SERVO_MAX_DUTY) {
+    printf("Error: the duty should be between %d and %d.\n", SERVO_MIN_DUTY, SERVO_MAX_DUTY);
+    return;
+  }
 
   pan_tilt_state.vertical_servo.angle = angle;
   pan_tilt_state.vertical_servo.duty = duty;
@@ -106,10 +125,11 @@ void configure_timer(uint8_t timer_selected, uint8_t timer_freq_hz) {
   ledc_timer_config(&timer_conf);
 }
 
+
 void configure_servo(uint8_t channel_selected, uint8_t timer_selected, uint8_t gpio_num) {
   ledc_channel_config_t ledc_conf;
   ledc_conf.channel = channel_selected;
-  ledc_conf.duty = 0;
+  ledc_conf.duty = (SERVO_MIN_DUTY + SERVO_MAX_DUTY) / 2;
   ledc_conf.gpio_num = gpio_num;
   ledc_conf.intr_type = LEDC_INTR_DISABLE;
   ledc_conf.speed_mode = LEDC_HIGH_SPEED_MODE;
@@ -117,10 +137,21 @@ void configure_servo(uint8_t channel_selected, uint8_t timer_selected, uint8_t g
   ledc_channel_config(&ledc_conf);
 }
 
+
+void servo_deinit(uint8_t channel_selected) {
+  ledc_stop(LEDC_HIGH_SPEED_MODE, channel_selected, 0);
+}
+
+void timer_deinit(uint8_t timer_selected) {
+  ledc_timer_rst(LEDC_HIGH_SPEED_MODE, timer_selected);
+}
+
+
 void update_timer_state(uint8_t timer_selected, uint8_t timer_freq_hz) {
   timers[timer_selected].is_initialized = 1;
   timers[timer_selected].freq_hz = timer_freq_hz;
 }
+
 
 void update_horizontal_servo_state(uint8_t channel_selected, uint8_t timer_selected, uint8_t gpio_num) {
   pan_tilt_state.horizontal_servo.is_initialized = 1;
@@ -130,6 +161,7 @@ void update_horizontal_servo_state(uint8_t channel_selected, uint8_t timer_selec
   pan_tilt_state.horizontal_servo.angle = 0;
   pan_tilt_state.horizontal_servo.duty = SERVO_MIN_DUTY;
 }
+
 
 void update_vertical_servo_state(uint8_t channel_selected, uint8_t timer_selected, uint8_t gpio_num) {
   pan_tilt_state.vertical_servo.is_initialized = 1;

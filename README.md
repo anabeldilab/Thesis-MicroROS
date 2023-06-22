@@ -42,6 +42,16 @@ duty_2ms = (2ms/20ms) * (2^15 - 1) ≈ 3277
 ```
 Por lo tanto, para la mayoría de los servos, el rango útil de valores de duty cycle estaría entre aproximadamente 1638 y 3277 (para una resolución de 15 bits y una frecuencia de 50Hz). Estos valores pueden variar dependiendo de las especificaciones del servo.
 
+## Testing
+To test the application, you can use the Unity project available in this repository. The Unity project is a simple application that mocks ROS2 String Messages to test the behavior of the pan-tilt servomotors.
+
+To test the application, you can follow these steps:
+
+* Go to the Unity project directory. cd test
+* Build the project.
+* Flash the project onto your ESP32 device.
+* Use Monitor mode to see tests results.
+
 
 ## License
 This project is licensed under the GNU General Public License Version 3, dated 29 June 2007. For more information, please see the LICENSE file in this repository or visit https://www.gnu.org/licenses/gpl-3.0.html.

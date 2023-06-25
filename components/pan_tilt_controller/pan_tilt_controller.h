@@ -1,4 +1,6 @@
 
+#pragma once
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdint.h>
@@ -15,8 +17,11 @@
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc); vTaskDelete(NULL);}}
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
 
-#define SERVO_MIN_DUTY  ((uint16_t)((1.0 / 20.0) * (32768.0 - 1.0))) // duty cycle for 0 grades
-#define SERVO_MAX_DUTY  ((uint16_t)((2.0 / 20.0) * (32768.0 - 1.0)))  // duty cycle for 180 grades   (2^15) duty resolution
+#define SERVO_MIN_DUTY  ((uint16_t)((0.52222 / 20.0) * (32768.0 - 1.0)))  // duty cycle for min grade
+#define SERVO_MAX_DUTY  ((uint16_t)((2.2 / 20.0) * (32768.0 - 1.0)))  // duty cycle for max grade  (2^15) duty resolution
+#define SERVO_MIDDLE_DUTY  ((uint16_t)((1.36666 / 20.0) * (32768.0 - 1.0)))  // duty cycle for middle grade  (2^15) duty resolution
+#define SERVO_MAX_ANGLE 180
+#define SERVO_MIN_ANGLE 0
 
 typedef struct {
     uint8_t is_initialized;

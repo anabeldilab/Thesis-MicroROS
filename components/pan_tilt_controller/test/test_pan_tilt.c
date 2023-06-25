@@ -66,3 +66,13 @@ TEST_CASE("Test vertical angle", "[pan_tilt_controller]") {
   TEST_ASSERT_EQUAL(15, vertical_angle_state);
   TEST_ASSERT_EQUAL(SERVO_MIN_DUTY + 136, vertical_duty_state);
 }
+
+TEST_CASE("Test increment movement", "[pan_tilt_controller]") {
+  pan_tilt_deinit();
+  default_pan_tilt_init();
+  set_vertical_angle(pan_tilt_state.vertical_servo.angle - 10); // Up
+
+  int16_t vertical_angle_state = pan_tilt_state.vertical_servo.angle;
+
+  TEST_ASSERT_EQUAL(80, vertical_angle_state);
+}

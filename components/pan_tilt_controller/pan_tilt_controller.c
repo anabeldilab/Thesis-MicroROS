@@ -33,18 +33,18 @@ void pan_tilt_deinit(void) {
 }
 
 void set_horizontal_angle(int16_t angle) {
-  if (angle < 0) {
-    angle = 0;
+  if (angle < SERVO_MIN_ANGLE) {
+    angle = SERVO_MIN_ANGLE;
     return;
-  } else if (angle > 180) {
-    angle = 180;
+  } else if (angle > SERVO_MAX_ANGLE) {
+    angle = SERVO_MAX_ANGLE;
     return;
   } else if (!pan_tilt_state.horizontal_servo.is_initialized) {
     printf("Error: the horizontal servomotor isn't initialized.\n");
     return;
   }
 
-  uint32_t duty = ((angle * (SERVO_MAX_DUTY - SERVO_MIN_DUTY)) / 180) + SERVO_MIN_DUTY;
+  uint32_t duty = ((angle * (SERVO_MAX_DUTY - SERVO_MIN_DUTY)) / SERVO_MAX_ANGLE) + SERVO_MIN_DUTY;
   uint8_t channel = pan_tilt_state.horizontal_servo.channel;
 
   pan_tilt_state.horizontal_servo.angle = angle;
@@ -55,19 +55,22 @@ void set_horizontal_angle(int16_t angle) {
 }
 
 void set_vertical_angle(int16_t angle) {
-  if (angle < 0 || angle > 180) {
-      printf("Error: the angle should be between 0 and 180 grades.\n");
-      return;
+  if (angle < SERVO_MIN_ANGLE) {
+    angle = SERVO_MIN_ANGLE;
+    return;
+  } else if (angle > SERVO_MAX_ANGLE - 30) {
+    angle = SERVO_MAX_ANGLE;
+    return;
   } else if (!pan_tilt_state.vertical_servo.is_initialized) {
     printf("Error: the vertical servomotor isn't initialized.\n");
     return;
   }
 
-  uint32_t duty = ((angle * (SERVO_MAX_DUTY - SERVO_MIN_DUTY)) / 180) + SERVO_MIN_DUTY;
+  uint32_t duty = ((angle * (SERVO_MAX_DUTY - SERVO_MIN_DUTY)) / SERVO_MAX_ANGLE) + SERVO_MIN_DUTY;
   uint8_t channel = pan_tilt_state.vertical_servo.channel;
 
   if (duty < SERVO_MIN_DUTY || duty > SERVO_MAX_DUTY) {
-    printf("Error: the duty should be between %d and %d.\n", SERVO_MIN_DUTY, SERVO_MAX_DUTY);
+    printf("Error: the duty should be between %u and %u.\n", SERVO_MIN_DUTY, SERVO_MAX_DUTY);
     return;
   }
 
@@ -129,7 +132,7 @@ void configure_timer(uint8_t timer_selected, uint8_t timer_freq_hz) {
 void configure_servo(uint8_t channel_selected, uint8_t timer_selected, uint8_t gpio_num) {
   ledc_channel_config_t ledc_conf;
   ledc_conf.channel = channel_selected;
-  ledc_conf.duty = (SERVO_MIN_DUTY + SERVO_MAX_DUTY) / 2;
+  ledc_conf.duty = SERVO_MIDDLE_DUTY;
   ledc_conf.gpio_num = gpio_num;
   ledc_conf.intr_type = LEDC_INTR_DISABLE;
   ledc_conf.speed_mode = LEDC_HIGH_SPEED_MODE;
@@ -158,8 +161,8 @@ void update_horizontal_servo_state(uint8_t channel_selected, uint8_t timer_selec
   pan_tilt_state.horizontal_servo.timer = timer_selected;
   pan_tilt_state.horizontal_servo.channel = channel_selected;
   pan_tilt_state.horizontal_servo.gpio_num = gpio_num;
-  pan_tilt_state.horizontal_servo.angle = 0;
-  pan_tilt_state.horizontal_servo.duty = SERVO_MIN_DUTY;
+  pan_tilt_state.horizontal_servo.angle = (SERVO_MAX_ANGLE + SERVO_MIN_ANGLE) / 2;
+  pan_tilt_state.horizontal_servo.duty = SERVO_MIDDLE_DUTY;
 }
 
 
@@ -168,6 +171,6 @@ void update_vertical_servo_state(uint8_t channel_selected, uint8_t timer_selecte
   pan_tilt_state.vertical_servo.timer = timer_selected;
   pan_tilt_state.vertical_servo.channel = channel_selected;
   pan_tilt_state.vertical_servo.gpio_num = gpio_num;
-  pan_tilt_state.vertical_servo.angle = 0;
-  pan_tilt_state.vertical_servo.duty = SERVO_MIN_DUTY;
+  pan_tilt_state.vertical_servo.angle = (SERVO_MAX_ANGLE + SERVO_MIN_ANGLE) / 2;
+  pan_tilt_state.vertical_servo.duty = SERVO_MIDDLE_DUTY;
 }

@@ -13,8 +13,8 @@
 #include "driver/ledc.h"
 #endif
 
-#define SERVO_MIN_DUTY  ((uint16_t)((0.52222 / 20.0) * (32768.0 - 1.0)))  // duty cycle for min grade
-#define SERVO_MAX_DUTY  ((uint16_t)((2.2 / 20.0) * (32768.0 - 1.0)))  // duty cycle for max grade  (2^15) duty resolution
+#define SERVO_MIN_DUTY  ((uint16_t)((0.56666 / 20.0) * (32768.0 - 1.0)))  // duty cycle for min grade
+#define SERVO_MAX_DUTY  ((uint16_t)((2.24444 / 20.0) * (32768.0 - 1.0)))  // duty cycle for max grade  (2^15) duty resolution
 #define SERVO_MIDDLE_DUTY  ((uint16_t)((1.36666 / 20.0) * (32768.0 - 1.0)))  // duty cycle for middle grade  (2^15) duty resolution
 #define SERVO_MAX_ANGLE 180
 #define SERVO_MIN_ANGLE 0

@@ -1,1 +1,1 @@
-idf_component_register(SRCS main.c esp32_serial_transport.c utils.c INCLUDE_DIRS "")
+idf_component_register(SRCS main.c utils.c wifi_ap.c wifi_utils.c INCLUDE_DIRS "")

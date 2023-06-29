@@ -42,6 +42,13 @@ duty_2ms = (2ms/20ms) * (2^15 - 1) ≈ 3277
 ```
 Por lo tanto, para la mayoría de los servos, el rango útil de valores de duty cycle estaría entre aproximadamente 1638 y 3277 (para una resolución de 15 bits y una frecuencia de 50Hz). Estos valores pueden variar dependiendo de las especificaciones del servo.
 
+## ESP32 as access point
+In order to connect the camera to the Unity application, the ESP32 must be configured as an access point. We need it because we want to have a direct connection between the camera and the Unity application, without the need for a router. To do this, we need to configure the ESP32 as an access point and set up a static IP address for the camera.
+
+* NVS (Non-Volatile Storage) is a key-value storage system used by ESP-IDF to store persistent data. It is used to store Wi-Fi credentials and other configuration data. NVS is implemented using flash memory, and its API is included in the esp_system.h header file.
+
+
+
 ## Testing
 To test the application, you can use the Unity project available in this repository. The Unity project is a simple application that mocks ROS2 String Messages to test the behavior of the pan-tilt servomotors.
 

@@ -12,10 +12,6 @@
 #include "freertos/task.h"
 #include "driver/ledc.h"
 #endif
-//https://icircuit.net/esp-idf-lets-control-servo-using-esp32/2073
-
-#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc); vTaskDelete(NULL);}}
-#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
 
 #define SERVO_MIN_DUTY  ((uint16_t)((0.52222 / 20.0) * (32768.0 - 1.0)))  // duty cycle for min grade
 #define SERVO_MAX_DUTY  ((uint16_t)((2.2 / 20.0) * (32768.0 - 1.0)))  // duty cycle for max grade  (2^15) duty resolution

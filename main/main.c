@@ -8,6 +8,7 @@ rcl_subscription_t subscriber;
 rcl_publisher_t publisher;
 std_msgs__msg__Header msgSubscriber;
 std_msgs__msg__Header msgPublisher;
+rcl_publisher_t *log_sap_publisher = NULL;
 
 bool b_wifi_disconnect = false;
 
@@ -43,20 +44,40 @@ void subscription_callback(const void * msgin) {
   msgPublisher.frame_id.size = msg->frame_id.size - LENGTHMSGCOMMAND;
   msgPublisher.frame_id.capacity = MAXLENGTHMESSAGE;
   RCSOFTCHECK(rcl_publish(&publisher, &msgPublisher, NULL));
-  
-  if(strcmp(read_command, "ACT_/") == 0) {
-		ip4_addr_t ip;
-		char ipstr[20];
-		char str_log[100];
-		if(get_target_ip(&ip)) {
+
+
+	if(strcmp(read_command, "CON_/") == 0) {
+		if(strcmp(read_data, "SAP") == 0) {
+		  wifi_init_softap(&publisher, target_mac);
+      return;
+		}
+		if(strcmp(read_data, "DIS") == 0) {
+	 		b_wifi_disconnect = true;	
+      return;
+		}
+    if (strcmp(read_data, "CAM") == 0) {
+      char *ipstr = get_camera_ip();
+      if(ipstr != NULL) {
+        char str_log[100];
+        strcpy(str_log, "Camera ip: ");
+        strcat(str_log, ipstr);
+        publish_header_from_string(str_log, &publisher);
+        return;
+      }
+    }
+  } else if(strcmp(read_command, "ACT_/") == 0) {
+    ip4_addr_t ip;
+    char ipstr[20];
+    char str_log[100];
+/*    if(get_target_ip(&ip)) {
       strcpy(str_log, "Action to station");
       strcpy(ipstr, ip4addr_ntoa(&ip));
       strcat(str_log, ipstr);
-		}
-		else {
-			strcpy(str_log,"Target station not found");
-		}
-	  publish_header_from_string(str_log, &publisher);		 
+    }
+    else {
+      strcpy(str_log,"Target station not found");
+    } */
+    publish_header_from_string(str_log, &publisher);		 
 
     if (strcmp(read_data, "Up") == 0) {
       set_vertical_angle(pan_tilt_state.vertical_servo.angle + ANGLEINCREMENT);
@@ -109,15 +130,17 @@ void micro_ros_task(void * arg) {
   msgSubscriber.frame_id.size = 0;
   msgSubscriber.frame_id.capacity = LENGTHMSGCOMMAND + MAXLENGTHMESSAGE;
 
-  publish_header_from_string("Starting soft access point", &publisher);
-  wifi_init_softap(&publisher, target_mac);
+  // Initialize publisher message about station access point
+  log_sap_publisher = &publisher;
 
   while(1) {
-		rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));
+    rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));
+    if(b_wifi_disconnect) {
+      wifi_disconnect(&publisher);
+      b_wifi_disconnect = false;
+    }
     usleep(10000);
   }
-
-  wifi_disconnect(&publisher);
 
   // free resources
   RCCHECK(rclc_executor_fini(&executor))
@@ -132,17 +155,21 @@ void micro_ros_task(void * arg) {
 static size_t uart_port = UART_NUM_0;
 
 void app_main(void * arg) {
-	//Initialize NVS
+  //Initialize NVS
   esp_err_t ret = nvs_flash_init();
   if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
     ESP_ERROR_CHECK(nvs_flash_erase());
     ret = nvs_flash_init();
   }
-  ESP_ERROR_CHECK(ret);
-  // wifi_init_softap(&publisher);
-  // wifi_init_sta();
+  if (ret != ESP_OK) {
+    char error_msg[128];
+    snprintf(error_msg, sizeof(error_msg), "Error en esp_wifi_init: %d", ret);
+    return;
+  } 
+  // Initialize WiFi
+  wifi_init_softap_no_ros(target_mac);
 
-#if defined(RMW_UXRCE_TRANSPORT_CUSTOM)
+  #if defined(RMW_UXRCE_TRANSPORT_CUSTOM)
   rmw_uros_set_custom_transport(
     true,
     (void *) &uart_port,
@@ -151,10 +178,11 @@ void app_main(void * arg) {
     esp32_serial_write,
     esp32_serial_read
   );
-#else
-#error micro-ROS transports misconfigured
-#endif  // RMW_UXRCE_TRANSPORT_CUSTOM
+  #else
+  #error micro-ROS transports misconfigured
+  #endif  // RMW_UXRCE_TRANSPORT_CUSTOM
 
+  // Create micro-ROS task
   xTaskCreate(micro_ros_task,
             "uros_task",
             CONFIG_MICRO_ROS_APP_STACK,

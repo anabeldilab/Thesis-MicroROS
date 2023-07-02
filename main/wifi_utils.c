@@ -19,7 +19,6 @@ bool compare_macs(uint8_t *mac1, uint8_t *mac2){
       break;
     }
   return result;
-
 }
 
 /*

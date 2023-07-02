@@ -42,12 +42,13 @@
 //#include "UI_conf.h"
 #include "wifi_conf.h"
 
-
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc);vTaskDelete(NULL);}}
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
 
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #define MACSTRLENGTH 18 
+
+extern rcl_publisher_t *log_sap_publisher;
 
 void publish_header_from_string(char *msg, rcl_publisher_t *publisher);
 static void wifi_event_handler_sap(void* arg, esp_event_base_t event_base,
@@ -59,3 +60,4 @@ void wifi_disconnect(rcl_publisher_t *publisher);
 void mac2str(char*, uint8_t*);
 bool compare_macs(uint8_t*, uint8_t*);
 bool get_target_ip(ip4_addr_t *ip);
+char *get_camera_ip(void);

@@ -1,8 +1,6 @@
 #include "esp_action_listener.h"
 
 //static const char *TAG_sap = "wifi softAP";
-
-static rcl_publisher_t *log_sap_publisher;
 static uint8_t *sap_target_mac;
 static ip4_addr_t sap_ip_target;
 static bool sap_ip_target_assigned = false;
@@ -37,14 +35,22 @@ static void wifi_event_handler_sap(void* arg, esp_event_base_t event_base,
       publish_header_from_string("Target station has ip", log_sap_publisher);
     } else {
       char ipstr[20];
-      ip4_addr_t ip;
-      ip.addr = event->ip.addr;
+      sap_ip_target.addr = event->ip.addr;
+      sap_ip_target_assigned = true;
       strcpy(logstr, "Ip assigned to a non-target station ");
-      strcpy(ipstr, ip4addr_ntoa(&ip));
+      strcpy(ipstr, ip4addr_ntoa(&sap_ip_target));
       strcat(logstr, ipstr);
       publish_header_from_string(logstr, log_sap_publisher);
     }
   }
+}
+
+char *get_camera_ip(void) {
+  char *ipstr = NULL;
+  if(sap_ip_target_assigned) {
+    ipstr = ip4addr_ntoa(&sap_ip_target);
+  }
+  return ipstr;
 }
 
 bool get_target_ip(ip4_addr_t *ip) {

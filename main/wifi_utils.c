@@ -53,17 +53,16 @@ return false;
 
 
 void mac2str(char *dest, uint8_t* mac){
-//dest requires 18 bytes
-char temp[3];
-memset(dest,0,MACSTRLENGTH);
-int pos=0;
-for(int i=0;i<6;i++){
-  itoa(mac[i],temp,16);
-  strcpy(dest+pos,temp);
-  pos=strlen(dest);
-  if(i!=5)
-    dest[pos++]='-';
-}
-
+  char temp[3];
+  memset(dest, 0, MACSTRLENGTH);
+  int pos = 0;
+  for(int i = 0; i < 6; i++){
+    itoa(mac[i], temp, 16);
+    strcpy(dest + pos, temp);
+    pos=strlen(dest);
+    if(i != 5) {
+      dest[pos++] = '-';
+    }
+  }
 }
 

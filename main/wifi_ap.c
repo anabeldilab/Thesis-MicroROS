@@ -1,12 +1,13 @@
 #include "esp_action_listener.h"
 
 //static const char *TAG_sap = "wifi softAP";
-static uint8_t *sap_target_mac;
+//static uint8_t *sap_target_mac;
 static ip4_addr_t sap_ip_target;
 static bool sap_ip_target_assigned = false;
+uint8_t target_mac[6] = {120, 33, 132, 155, 205, 152};
 
 
-static void wifi_event_handler_sap(void* arg, esp_event_base_t event_base,
+void wifi_event_handler_sap(void* arg, esp_event_base_t event_base,
                                     int32_t event_id, void* event_data) {
 	char logstr[100];
 
@@ -22,25 +23,29 @@ static void wifi_event_handler_sap(void* arg, esp_event_base_t event_base,
   } else if (event_id == WIFI_EVENT_AP_STADISCONNECTED) {
     wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
     publish_header_from_string("Station disconnected", log_sap_publisher);
-    if(compare_macs(sap_target_mac, event->mac)) {
+    if(compare_macs(target_mac, event->mac)) {
       publish_header_from_string("Target station disconnected", log_sap_publisher);
       sap_ip_target_assigned = false;
     }
     // ESP_LOGI(TAG_sap, "station %s leave, AID=%d", MAC2STR(event->mac), event->aid);
   } else if (event_id == IP_EVENT_AP_STAIPASSIGNED) {
     ip_event_ap_staipassigned_t *event = (ip_event_ap_staipassigned_t *)event_data;
-    if(compare_macs(sap_target_mac, event->mac)) {
-      sap_ip_target.addr = event->ip.addr;
-      sap_ip_target_assigned = true;
-      publish_header_from_string("Target station has ip", log_sap_publisher);
-    } else {
+    if(compare_macs(target_mac, event->mac)) {
       char ipstr[20];
       sap_ip_target.addr = event->ip.addr;
       sap_ip_target_assigned = true;
-      strcpy(logstr, "Ip assigned to a non-target station ");
+      strcpy(logstr,"Target station has ip ");
       strcpy(ipstr, ip4addr_ntoa(&sap_ip_target));
       strcat(logstr, ipstr);
       publish_header_from_string(logstr, log_sap_publisher);
+    } else {
+	     char ipstr[20];
+	     ip4_addr_t ip;
+	     ip.addr=event->ip.addr;
+	     strcpy(logstr,"Ip assigned to a non-target station ");
+	     strcpy(ipstr,ip4addr_ntoa(&ip));
+	     strcat(logstr,ipstr);
+	     publish_header_from_string(logstr,log_sap_publisher);
     }
   }
 }
@@ -60,11 +65,9 @@ bool get_target_ip(ip4_addr_t *ip) {
 	return true;
 }
 
-void wifi_init_softap(rcl_publisher_t *publisher, uint8_t *target_mac) {
+void wifi_init_softap(rcl_publisher_t *publisher, uint8_t *client_mac) {
     // Init sap publisher
     log_sap_publisher = publisher; 
-    // Init target_mac
-    sap_target_mac = target_mac;
     publish_header_from_string("Starting Soft Access Point", publisher);
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
@@ -114,9 +117,7 @@ void wifi_init_softap(rcl_publisher_t *publisher, uint8_t *target_mac) {
 }
 
 
-void wifi_init_softap_no_ros(uint8_t *target_mac) {
-    // Init target_mac
-    sap_target_mac = target_mac;
+void wifi_init_softap_no_ros(uint8_t *client_mac) {
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     esp_netif_create_default_wifi_ap();

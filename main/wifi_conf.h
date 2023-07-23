@@ -5,5 +5,5 @@
 
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT      BIT1
-#define MAXHTTPCOMMANDLEGTH 50
-static uint8_t target_mac[6]={188,221,194,36,109,200};
+
+//78-21-84-9b-cd-98

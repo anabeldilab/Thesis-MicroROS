@@ -49,13 +49,14 @@
 #define MACSTRLENGTH 18 
 
 extern rcl_publisher_t *log_sap_publisher;
+extern uint8_t target_mac[6];
 
 void publish_header_from_string(char *msg, rcl_publisher_t *publisher);
-static void wifi_event_handler_sap(void* arg, esp_event_base_t event_base,
+void wifi_event_handler_sap(void* arg, esp_event_base_t event_base,
                                     int32_t event_id, void* event_data);
 
-void wifi_init_softap(rcl_publisher_t *publisher,uint8_t *target_mac);
-void wifi_init_softap_no_ros(uint8_t *target_mac);
+void wifi_init_softap(rcl_publisher_t *publisher,uint8_t *client_mac);
+void wifi_init_softap_no_ros(uint8_t *client_mac);
 void wifi_disconnect(rcl_publisher_t *publisher);
 void mac2str(char*, uint8_t*);
 bool compare_macs(uint8_t*, uint8_t*);

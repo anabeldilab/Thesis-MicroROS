@@ -66,8 +66,6 @@ void subscription_callback(const void * msgin) {
       }
     }
   } else if(strcmp(read_command, "ACT_/") == 0) {
-    ip4_addr_t ip;
-    char ipstr[20];
     char str_log[100];
 /*    if(get_target_ip(&ip)) {
       strcpy(str_log, "Action to station");
@@ -79,7 +77,10 @@ void subscription_callback(const void * msgin) {
     } */
     publish_header_from_string(str_log, &publisher);		 
 
-    if (strcmp(read_data, "Up") == 0) {
+    if (strcmp(read_data, "Reset") == 0) {
+      set_vertical_angle(0);
+      set_horizontal_angle(90);
+    } else if (strcmp(read_data, "Up") == 0) {
       set_vertical_angle(pan_tilt_state.vertical_servo.angle + ANGLEINCREMENT);
     } else if (strcmp(read_data, "Down") == 0) {
       set_vertical_angle(pan_tilt_state.vertical_servo.angle - ANGLEINCREMENT);

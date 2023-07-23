@@ -16,6 +16,8 @@ void timer_deinit(uint8_t timer_selected);
 
 void default_pan_tilt_init() {
   pan_tilt_init(0, 50, 0, 1, 17, 16);
+  set_horizontal_angle(90);
+  set_vertical_angle(0);
 }
 
 void pan_tilt_init(uint8_t timer, uint8_t freq_hz, uint8_t channel_horizontal, uint8_t channel_vetical, uint8_t gpio_horizontal, uint8_t gpio_vertical) {

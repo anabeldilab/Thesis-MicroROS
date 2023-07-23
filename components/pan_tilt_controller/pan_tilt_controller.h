@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <stdio.h>
@@ -20,18 +19,18 @@
 #define SERVO_MIN_ANGLE 0
 
 typedef struct {
-    uint8_t is_initialized;
-    uint8_t freq_hz;
-    uint8_t duty_resolution;
+  uint8_t is_initialized;
+  uint8_t freq_hz;
+  uint8_t duty_resolution;
 } TimerState;
 
 typedef struct {
-    uint8_t is_initialized;
-    uint8_t timer;
-    uint8_t channel;
-    uint8_t gpio_num;
-    uint16_t angle;
-    uint32_t duty;
+  uint8_t is_initialized;
+  uint8_t timer;
+  uint8_t channel;
+  uint8_t gpio_num;
+  uint16_t angle;
+  uint32_t duty;
 } ServoState;
 
 typedef struct {
